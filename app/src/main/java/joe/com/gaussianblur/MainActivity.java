@@ -16,7 +16,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         ImageView img = (ImageView) findViewById(R.id.img);
         Bitmap bp = BitmapFactory.decodeResource(getResources(), R.drawable.bp);
-        BlurCore.blurBitmap(bp, 20);
+        BlurCore.blurBitmap(bp, 40);
         img.setImageBitmap(bp);
     }
 }
