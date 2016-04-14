@@ -9,3 +9,9 @@
 
 ####问题
 实际使用中发现，同一模糊半径，实现的模糊效果与PS中的高斯模糊效果相差还是很大的。
+
+原图：<br>
+![](https://github.com/1030310877/GaussianBlur/blob/master/app/src/main/res/drawable/bp.jpg)
+</br>
+效果图：<br>
+![](https://github.com/1030310877/GaussianBlur/blob/master/blur.png)
