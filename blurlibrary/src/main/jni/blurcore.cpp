@@ -15,52 +15,52 @@
 #define  LOGE(...)  __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__)
 
 void boxBlurV(uint32_t *scl, uint32_t *tcl, int w, int h, int r) {
-    int y = 0;
-    for (y = 0; y < w; ++y) {
+    int j = 0;
+    for (j = 0; j < w; ++j) {
         uint32_t totalr = 0;
         uint32_t totalg = 0;
         uint32_t totalb = 0;
         // Process entire window for first pixel
         for (int kx = -r; kx <= r; ++kx) {
             if (kx < 0) {
-                totalr += 0xff;
-                totalg += 0xff;
-                totalb += 0xff;
+                totalr += (scl[j] & 0x00FF0000) >> 16;
+                totalg += (scl[j] & 0x0000FF00) >> 8;
+                totalb += (scl[j] & 0x000000FF) >> 0;
             } else {
-                totalr = totalr + ((scl[kx * w + y] & 0x00FF0000) >> 16);
-                totalg = totalg + ((scl[kx * w + y] & 0x0000FF00) >> 8);
-                totalb = totalb + ((scl[kx * w + y] & 0x000000FF) >> 0);
+                totalr = totalr + ((scl[kx * w + j] & 0x00FF0000) >> 16);
+                totalg = totalg + ((scl[kx * w + j] & 0x0000FF00) >> 8);
+                totalb = totalb + ((scl[kx * w + j] & 0x000000FF) >> 0);
             }
         }
-        tcl[y] = (scl[y] & 0XFF000000) |
-                 ((totalr / (r * 2 + 1)) << 16) |
-                 ((totalg / (r * 2 + 1)) << 8) |
-                 ((totalb / (r * 2 + 1)) << 0);
+        tcl[j] = (scl[j] & 0xFF000000) |
+                 ((totalr / (2 * r + 1)) << 16) |
+                 ((totalg / (2 * r + 1)) << 8) |
+                 ((totalb / (2 * r + 1)) << 0);
         // Subsequent pixels just update window total
-        for (int x = 1; x < h; ++x) {
+        for (int i = 1; i < h; ++i) {
             // Subtract pixel leaving window
-            if (x - r - 1 < 0) {
-                totalr -= 0xff;
-                totalg -= 0xff;
-                totalb -= 0xff;
+            if (i - r < 0) {
+                totalr -= (scl[j] & 0x00FF0000) >> 16;
+                totalg -= (scl[j] & 0x0000FF00) >> 8;
+                totalb -= (scl[j] & 0x000000FF) >> 0;
             } else {
-                totalr = totalr - ((scl[((x - r - 1) * w) + y] & 0x00FF0000) >> 16);
-                totalg = totalg - ((scl[((x - r - 1) * w) + y] & 0x0000FF00) >> 8);
-                totalb = totalb - ((scl[((x - r - 1) * w) + y] & 0x000000FF) >> 0);
+                totalr -= (scl[j + (i - r) * w] & 0x00FF0000) >> 16;
+                totalg -= (scl[j + (i - r) * w] & 0x0000FF00) >> 8;
+                totalb -= (scl[j + (i - r) * w] & 0x000000FF) >> 0;
             }
 
             // Add pixel entering window
-            if (x + r >= h) {
-                totalr += 0xff;
-                totalg += 0xff;
-                totalb += 0xff;
+            if (i + r >= h) {
+                totalr += (scl[j + (h - 1) * w] & 0x00FF0000) >> 16;
+                totalg += (scl[j + (h - 1) * w] & 0x0000FF00) >> 8;
+                totalb += (scl[j + (h - 1) * w] & 0x000000FF) >> 0;
             } else {
-                totalr = totalr + ((scl[((x + r) * w) + y] & 0x00FF0000) >> 16);
-                totalg = totalg + ((scl[((x + r) * w) + y] & 0x0000FF00) >> 8);
-                totalb = totalb + ((scl[((x + r) * w) + y] & 0x000000FF) >> 0);
+                totalr += (scl[j + (i + r) * w] & 0x00FF0000) >> 16;
+                totalg += (scl[j + (i + r) * w] & 0x0000FF00) >> 8;
+                totalb += (scl[j + (i + r) * w] & 0x000000FF) >> 0;
             }
 
-            tcl[x * w + y] = (scl[x * w + y] & 0XFF000000) |
+            tcl[i * w + j] = (scl[i * w + j] & 0xFF000000) |
                              ((totalr / (r * 2 + 1)) << 16) |
                              ((totalg / (r * 2 + 1)) << 8) |
                              ((totalb / (r * 2 + 1)) << 0);
@@ -69,52 +69,52 @@ void boxBlurV(uint32_t *scl, uint32_t *tcl, int w, int h, int r) {
 }
 
 void boxBlurH(uint32_t *scl, uint32_t *tcl, int w, int h, int r) {
-    int y = 0;
-    for (y = 0; y < h; ++y) {
+    int i = 0;
+    for (i = 0; i < h; ++i) {
         uint32_t totalr = 0;
         uint32_t totalg = 0;
         uint32_t totalb = 0;
         // Process entire window for first pixel
         for (int kx = -r; kx <= r; ++kx) {
             if (kx < 0) {
-                totalr += 0xff;
-                totalg += 0xff;
-                totalb += 0xff;
+                totalr += (scl[w * i] & 0x00FF0000) >> 16;
+                totalg += (scl[w * i] & 0x0000FF00) >> 8;
+                totalb += (scl[w * i] & 0x000000FF) >> 0;
             } else {
-                totalr = totalr + ((scl[kx + w * y] & 0x00FF0000) >> 16);
-                totalg = totalg + ((scl[kx + w * y] & 0x0000FF00) >> 8);
-                totalb = totalb + ((scl[kx + w * y] & 0x000000FF) >> 0);
+                totalr = totalr + ((scl[kx + w * i] & 0x00FF0000) >> 16);
+                totalg = totalg + ((scl[kx + w * i] & 0x0000FF00) >> 8);
+                totalb = totalb + ((scl[kx + w * i] & 0x000000FF) >> 0);
             }
         }
-        tcl[0 + w * y] = (scl[0 + w * y] & 0XFF000000) |
+        tcl[0 + w * i] = (scl[0 + w * i] & 0xFF000000) |
                          ((totalr / (r * 2 + 1)) << 16) |
                          ((totalg / (r * 2 + 1)) << 8) |
                          ((totalb / (r * 2 + 1)) << 0);
         // Subsequent pixels just update window total
-        for (int x = 1; x < w; ++x) {
+        for (int j = 1; j < w; ++j) {
             // Subtract pixel leaving window
-            if (x - r - 1 < 0) {
-                totalr -= 0xff;
-                totalg -= 0xff;
-                totalb -= 0xff;
+            if (j - r < 0) {
+                totalr -= (scl[w * i] & 0x00FF0000) >> 16;
+                totalg -= (scl[w * i] & 0x0000FF00) >> 8;
+                totalb -= (scl[w * i] & 0x000000FF) >> 0;
             } else {
-                totalr = totalr - ((scl[x - r - 1 + w * y] & 0x00FF0000) >> 16);
-                totalg = totalg - ((scl[x - r - 1 + w * y] & 0x0000FF00) >> 8);
-                totalb = totalb - ((scl[x - r - 1 + w * y] & 0x000000FF) >> 0);
+                totalr -=((scl[w * i + j - r] & 0x00FF0000) >> 16);
+                totalg -=((scl[w * i + j - r] & 0x0000FF00) >> 8);
+                totalb -=((scl[w * i + j - r] & 0x000000FF) >> 0);
             }
 
             // Add pixel entering window
-            if (x + r >= w) {
-                totalr += 0xff;
-                totalg += 0xff;
-                totalb += 0xff;
+            if (j + r >= w) {
+                totalr += (scl[w * i + w - 1] & 0x00FF0000) >> 16;
+                totalg += (scl[w * i + w - 1] & 0x0000FF00) >> 8;
+                totalb += (scl[w * i + w - 1] & 0x000000FF) >> 0;
             } else {
-                totalr = totalr + ((scl[x + r + w * y] & 0x00FF0000) >> 16);
-                totalg = totalg + ((scl[x + r + w * y] & 0x0000FF00) >> 8);
-                totalb = totalb + ((scl[x + r + w * y] & 0x000000FF) >> 0);
+                totalr +=(scl[w * i + j + r] & 0x00FF0000) >> 16;
+                totalg +=(scl[w * i + j + r] & 0x0000FF00) >> 8;
+                totalb +=(scl[w * i + j + r] & 0x000000FF) >> 0;
             }
 
-            tcl[x + w * y] = (scl[x + w * y] & 0XFF000000) |
+            tcl[j + w * i] = (scl[j + w * i] & 0xFF000000) |
                              ((totalr / (r * 2 + 1)) << 16) |
                              ((totalg / (r * 2 + 1)) << 8) |
                              ((totalb / (r * 2 + 1)) << 0);
